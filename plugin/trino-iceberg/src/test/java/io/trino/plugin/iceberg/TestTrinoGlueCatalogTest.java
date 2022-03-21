@@ -60,6 +60,7 @@ public class TestTrinoGlueCatalogTest
         return new TrinoGlueCatalog(
                 hdfsEnvironment,
                 new GlueIcebergTableOperationsProvider(new HdfsFileIoProvider(hdfsEnvironment), new GlueMetastoreStats(), new GlueHiveMetastoreConfig()),
+                "test",
                 AWSGlueAsyncClientBuilder.defaultClient(),
                 new GlueMetastoreStats(),
                 Optional.empty(),
@@ -83,6 +84,7 @@ public class TestTrinoGlueCatalogTest
         TrinoCatalog catalogWithDefaultLocation = new TrinoGlueCatalog(
                 hdfsEnvironment,
                 new GlueIcebergTableOperationsProvider(new HdfsFileIoProvider(hdfsEnvironment), new GlueMetastoreStats(), new GlueHiveMetastoreConfig()),
+                "test",
                 AWSGlueAsyncClientBuilder.defaultClient(),
                 new GlueMetastoreStats(),
                 Optional.of(tmpDirectory.toAbsolutePath().toString()),
