@@ -15,6 +15,7 @@ package io.trino.plugin.iceberg.catalog.glue;
 
 import com.amazonaws.services.glue.AWSGlueAsync;
 import io.trino.plugin.hive.HdfsEnvironment;
+import io.trino.plugin.hive.NodeVersion;
 import io.trino.plugin.hive.metastore.glue.GlueHiveMetastoreConfig;
 import io.trino.plugin.hive.metastore.glue.GlueMetastoreStats;
 import io.trino.plugin.iceberg.IcebergConfig;
@@ -38,6 +39,7 @@ public class TrinoGlueCatalogFactory
 {
     private final HdfsEnvironment hdfsEnvironment;
     private final IcebergTableOperationsProvider tableOperationsProvider;
+    private final String trinoVersion;
     private final Optional<String> defaultSchemaLocation;
     private final AWSGlueAsync glueClient;
     private final boolean isUniqueTableLocation;
@@ -47,12 +49,14 @@ public class TrinoGlueCatalogFactory
     public TrinoGlueCatalogFactory(
             HdfsEnvironment hdfsEnvironment,
             IcebergTableOperationsProvider tableOperationsProvider,
+            NodeVersion nodeVersion,
             GlueHiveMetastoreConfig glueConfig,
             IcebergConfig icebergConfig,
             GlueMetastoreStats stats)
     {
         this.hdfsEnvironment = requireNonNull(hdfsEnvironment, "hdfsEnvironment is null");
         this.tableOperationsProvider = requireNonNull(tableOperationsProvider, "tableOperationsProvider is null");
+        this.trinoVersion = requireNonNull(nodeVersion, "nodeVersion is null").toString();
         requireNonNull(glueConfig, "glueConfig is null");
         checkArgument(glueConfig.getCatalogId().isEmpty(), "catalogId configuration is not supported");
         this.defaultSchemaLocation = glueConfig.getDefaultWarehouseDir();
@@ -72,6 +76,6 @@ public class TrinoGlueCatalogFactory
     @Override
     public TrinoCatalog create(ConnectorIdentity identity)
     {
-        return new TrinoGlueCatalog(hdfsEnvironment, tableOperationsProvider, glueClient, stats, defaultSchemaLocation, isUniqueTableLocation);
+        return new TrinoGlueCatalog(hdfsEnvironment, tableOperationsProvider, trinoVersion, glueClient, stats, defaultSchemaLocation, isUniqueTableLocation);
     }
 }
