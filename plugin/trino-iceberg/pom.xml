@@ -16,6 +16,8 @@
     <properties>
         <air.main.basedir>${project.parent.basedir}</air.main.basedir>
         <dep.iceberg.version>0.13.1</dep.iceberg.version>
+        <dep.nessie.version>0.23.1</dep.nessie.version>
+        <dep.nessie-apprunner.version>0.21.4</dep.nessie-apprunner.version>
     </properties>
 
     <dependencies>
@@ -188,6 +190,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.projectnessie</groupId>
+            <artifactId>nessie-client</artifactId>
+            <version>${dep.nessie.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectnessie</groupId>
+            <artifactId>nessie-model</artifactId>
+            <version>${dep.nessie.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.weakref</groupId>
             <artifactId>jmxutils</artifactId>
         </dependency>
@@ -353,6 +367,64 @@
                     </ignoredResourcePatterns>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.projectnessie</groupId>
+                <artifactId>nessie-apprunner-maven-plugin</artifactId>
+                <version>${dep.nessie-apprunner.version}</version>
+                <configuration>
+                    <skip>${skipITs}</skip>
+                    <appArtifactId>org.projectnessie:nessie-quarkus:jar:runner:${dep.nessie.version}</appArtifactId>
+                    <systemProperties>
+                        <!-- disable devservices to stop Quarkus from starting Mongo via testcontainers -->
+                        <quarkus.devservices.enabled>false</quarkus.devservices.enabled>
+                        <!-- Use INMEMORY version store for testing -->
+                        <nessie.version.store.type>INMEMORY</nessie.version.store.type>
+                    </systemProperties>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.projectnessie</groupId>
+                        <artifactId>nessie-quarkus</artifactId>
+                        <version>${dep.nessie.version}</version>
+                        <classifier>runner</classifier>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>start</id>
+                        <phase>pre-integration-test</phase>
+                        <goals><goal>start</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals><goal>stop</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <!-- this automatically injects the random port that the nessie server is using -->
+                        <nessie.http.test-port>${quarkus.http.test-port}</nessie.http.test-port>
+                    </systemPropertyVariables>
+                    <failIfNoTests>false</failIfNoTests>
+                    <includes>
+                        <include>**/TestTrinoNessieCatalogIntegration.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -374,6 +446,7 @@
                                 <exclude>**/TestTrinoGlueCatalogTest.java</exclude>
                                 <exclude>**/TestSharedGlueMetastore.java</exclude>
                                 <exclude>**/TestIcebergGlueCatalogAccessOperations.java</exclude>
+                                <exclude>**/TestTrinoNessieCatalogIntegration.java</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -413,6 +486,22 @@
                                 <include>**/TestTrinoGlueCatalogTest.java</include>
                                 <include>**/TestSharedGlueMetastore.java</include>
                                 <include>**/TestIcebergGlueCatalogAccessOperations.java</include>
+                            </includes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>nessie</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/Test*Nessie*.java</include>
                             </includes>
                         </configuration>
                     </plugin>
