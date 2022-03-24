@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -218,12 +217,27 @@
 
         <dependency>
             <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-nessie</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-parquet</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.jdbi</groupId>
             <artifactId>jdbi3-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectnessie</groupId>
+            <artifactId>nessie-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectnessie</groupId>
+            <artifactId>nessie-model</artifactId>
         </dependency>
 
         <dependency>
@@ -504,6 +518,7 @@
                         <requireUpperBoundDeps>
                             <excludes combine.children="append">
                                 <exclude>com.google.guava:guava</exclude>
+                                <exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
                             </excludes>
                         </requireUpperBoundDeps>
                     </rules>

@@ -6245,6 +6245,11 @@ public abstract class BaseIcebergConnectorTest
         String invalidTargetTableName = validTargetTableName + "z";
         assertThatThrownBy(() -> assertUpdate("ALTER TABLE " + sourceTableName + " RENAME TO " + invalidTargetTableName))
                 .satisfies(this::verifyTableNameLengthFailurePermissible);
+        verifyInvalidTargetTableDoesNotExist(invalidTargetTableName);
+    }
+
+    protected void verifyInvalidTargetTableDoesNotExist(String invalidTargetTableName)
+    {
         assertFalse(getQueryRunner().tableExists(getSession(), invalidTargetTableName));
     }
 
