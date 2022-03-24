@@ -218,6 +218,11 @@
 
         <dependency>
             <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-nessie</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-orc</artifactId>
         </dependency>
 
@@ -229,6 +234,16 @@
         <dependency>
             <groupId>org.jdbi</groupId>
             <artifactId>jdbi3-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectnessie.nessie</groupId>
+            <artifactId>nessie-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectnessie.nessie</groupId>
+            <artifactId>nessie-model</artifactId>
         </dependency>
 
         <dependency>
@@ -523,7 +538,19 @@
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
             </plugin>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <rules>
+                        <requireUpperBoundDeps>
+                            <excludes combine.children="append">
+                                <exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
+                            </excludes>
+                        </requireUpperBoundDeps>
+                    </rules>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.basepom.maven</groupId>
                 <artifactId>duplicate-finder-maven-plugin</artifactId>

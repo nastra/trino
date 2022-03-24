@@ -6561,6 +6561,33 @@ public abstract class BaseIcebergConnectorTest
         assertThat(e).hasMessageMatching("Schema name must be shorter than or equal to '128' characters but got '129'");
     }
 
+    @Override
+    public void testRenameTableToLongTableName()
+    {
+        // Override because the max name length is different from CREATE TABLE case
+        String sourceTableName = "test_rename_source_" + randomNameSuffix();
+        assertUpdate("CREATE TABLE " + sourceTableName + " AS SELECT 123 x", 1);
+
+        String baseTableName = "test_rename_target_" + randomNameSuffix();
+
+        String validTargetTableName = baseTableName + "z".repeat(maxTableRenameLength().getAsInt() - baseTableName.length());
+        assertUpdate("ALTER TABLE " + sourceTableName + " RENAME TO " + validTargetTableName);
+        assertTrue(getQueryRunner().tableExists(getSession(), validTargetTableName));
+        assertQuery("SELECT x FROM " + validTargetTableName, "VALUES 123");
+        assertUpdate("DROP TABLE " + validTargetTableName);
+
+        assertUpdate("CREATE TABLE " + sourceTableName + " AS SELECT 123 x", 1);
+        String invalidTargetTableName = validTargetTableName + "z";
+        assertThatThrownBy(() -> assertUpdate("ALTER TABLE " + sourceTableName + " RENAME TO " + invalidTargetTableName))
+                .satisfies(this::verifyTableNameLengthFailurePermissible);
+        verifyInvalidTargetTableDoesNotExist(invalidTargetTableName);
+    }
+
+    protected void verifyInvalidTargetTableDoesNotExist(String invalidTargetTableName)
+    {
+        assertFalse(getQueryRunner().tableExists(getSession(), invalidTargetTableName));
+    }
+
     @Test
     public void testSnapshotSummariesHaveTrinoQueryIdFormatV1()
     {

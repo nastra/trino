@@ -69,6 +69,7 @@
         <dep.casandra.version>4.14.0</dep.casandra.version>
         <dep.minio.version>8.4.5</dep.minio.version>
         <dep.iceberg.version>1.2.1</dep.iceberg.version>
+        <dep.nessie.version>0.51.1</dep.nessie.version>
         <dep.protobuf.version>3.22.2</dep.protobuf.version>
         <dep.wire.version>4.5.0</dep.wire.version>
         <dep.netty.version>4.1.92.Final</dep.netty.version>
@@ -1688,6 +1689,12 @@
 
             <dependency>
                 <groupId>org.apache.iceberg</groupId>
+                <artifactId>iceberg-nessie</artifactId>
+                <version>${dep.iceberg.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.iceberg</groupId>
                 <artifactId>iceberg-orc</artifactId>
                 <version>${dep.iceberg.version}</version>
                 <exclusions>
@@ -1857,6 +1864,18 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>42.6.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectnessie.nessie</groupId>
+                <artifactId>nessie-client</artifactId>
+                <version>${dep.nessie.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectnessie.nessie</groupId>
+                <artifactId>nessie-model</artifactId>
+                <version>${dep.nessie.version}</version>
             </dependency>
 
             <dependency>
