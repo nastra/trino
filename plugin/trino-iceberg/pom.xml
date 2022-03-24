@@ -194,7 +194,22 @@
 
         <dependency>
             <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-nessie</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-parquet</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectnessie</groupId>
+            <artifactId>nessie-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectnessie</groupId>
+            <artifactId>nessie-model</artifactId>
         </dependency>
 
         <dependency>
@@ -370,6 +385,12 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
 
