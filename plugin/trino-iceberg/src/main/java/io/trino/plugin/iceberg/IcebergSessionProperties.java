@@ -76,6 +76,8 @@ public final class IcebergSessionProperties
     private static final String HIVE_CATALOG_NAME = "hive_catalog_name";
     public static final String EXPIRE_SNAPSHOTS_MIN_RETENTION = "expire_snapshots_min_retention";
     public static final String DELETE_ORPHAN_FILES_MIN_RETENTION = "delete_orphan_files_min_retention";
+    private static final String NESSIE_REFERENCE_NAME = "nessie_reference_name";
+    private static final String NESSIE_REFERENCE_HASH = "nessie_reference_hash";
 
     private final List<PropertyMetadata<?>> sessionProperties;
 
@@ -241,6 +243,16 @@ public final class IcebergSessionProperties
                         "Minimal retention period for delete_orphan_files procedure",
                         icebergConfig.getDeleteOrphanFilesMinRetention(),
                         false))
+                .add(stringProperty(
+                        NESSIE_REFERENCE_NAME,
+                        "Nessie reference name to use",
+                        "main",
+                        false))
+                .add(stringProperty(
+                        NESSIE_REFERENCE_HASH,
+                        "Nessie reference hash to use",
+                        null,
+                        false))
                 .build();
     }
 
@@ -395,5 +407,15 @@ public final class IcebergSessionProperties
     public static Duration getDeleteOrphanFilesMinRetention(ConnectorSession session)
     {
         return session.getProperty(DELETE_ORPHAN_FILES_MIN_RETENTION, Duration.class);
+    }
+
+    public static String getNessieReferenceName(ConnectorSession session)
+    {
+        return session.getProperty(NESSIE_REFERENCE_NAME, String.class);
+    }
+
+    public static String getNessieReferenceHash(ConnectorSession session)
+    {
+        return session.getProperty(NESSIE_REFERENCE_HASH, String.class);
     }
 }

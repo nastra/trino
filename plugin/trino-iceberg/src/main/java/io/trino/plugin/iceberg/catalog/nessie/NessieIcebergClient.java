@@ -15,7 +15,9 @@ package io.trino.plugin.iceberg.catalog.nessie;
 
 import com.google.common.base.Suppliers;
 import io.trino.plugin.hive.SchemaAlreadyExistsException;
+import io.trino.plugin.iceberg.IcebergSessionProperties;
 import io.trino.spi.TrinoException;
+import io.trino.spi.connector.ConnectorSession;
 import io.trino.spi.connector.SchemaNotFoundException;
 import io.trino.spi.connector.SchemaTableName;
 import org.apache.iceberg.Snapshot;
@@ -125,7 +127,7 @@ public class NessieIcebergClient
         }
         catch (NessieNotFoundException e) {
             if (requestedRef.isPresent()) {
-                throw new TrinoException(ICEBERG_CATALOG_ERROR, format("Nessie ref '%s' does not exist. This ref must exist before creating a NessieCatalog.", requestedRef), e);
+                throw new TrinoException(ICEBERG_CATALOG_ERROR, format("Nessie ref '%s' does not exist. This ref must exist before creating a NessieCatalog.", requestedRef.get()), e);
             }
 
             throw new TrinoException(ICEBERG_CATALOG_ERROR, "Nessie does not have an existing default branch." +
@@ -141,6 +143,19 @@ public class NessieIcebergClient
         catch (NessieNotFoundException e) {
             throw new TrinoException(ICEBERG_CATALOG_ERROR, format("Failed to refresh as ref '%s' is no longer valid.", getReference().getName()), e);
         }
+    }
+
+    public NessieIcebergClient withReference(String requestedRef, String hash)
+    {
+        if (null == requestedRef || reference.get().reference.getName().equals(requestedRef) || reference.get().reference.getHash().equals(hash)) {
+            return this;
+        }
+        return new NessieIcebergClient(nessieApi, requestedRef, hash);
+    }
+
+    public NessieIcebergClient withReference(ConnectorSession session)
+    {
+        return this.withReference(IcebergSessionProperties.getNessieReferenceName(session), IcebergSessionProperties.getNessieReferenceHash(session));
     }
 
     public List<String> listNamespaces()

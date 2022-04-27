@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.trino.plugin.base.CatalogName;
 import io.trino.plugin.iceberg.IcebergSchemaProperties;
+import io.trino.plugin.iceberg.IcebergSessionProperties;
 import io.trino.plugin.iceberg.catalog.AbstractTrinoCatalog;
 import io.trino.plugin.iceberg.catalog.IcebergTableOperationsProvider;
 import io.trino.spi.TrinoException;
@@ -71,19 +72,19 @@ public class TrinoNessieCatalog
     @Override
     public List<String> listNamespaces(ConnectorSession session)
     {
-        return nessieClient.listNamespaces();
+        return nessieClient.withReference(session).listNamespaces();
     }
 
     @Override
     public void dropNamespace(ConnectorSession session, String namespace)
     {
-        nessieClient.dropNamespace(namespace);
+        nessieClient.withReference(session).dropNamespace(namespace);
     }
 
     @Override
     public Map<String, Object> loadNamespaceMetadata(ConnectorSession session, String namespace)
     {
-        return nessieClient.loadNamespaceMetadata(namespace);
+        return nessieClient.withReference(session).loadNamespaceMetadata(namespace);
     }
 
     @Override
@@ -95,7 +96,7 @@ public class TrinoNessieCatalog
     @Override
     public void createNamespace(ConnectorSession session, String namespace, Map<String, Object> properties, TrinoPrincipal owner)
     {
-        nessieClient.createNamespace(namespace, properties);
+        nessieClient.withReference(session).createNamespace(namespace, properties);
     }
 
     @Override
@@ -113,7 +114,7 @@ public class TrinoNessieCatalog
     @Override
     public List<SchemaTableName> listTables(ConnectorSession session, Optional<String> namespace)
     {
-        return nessieClient.listTables(namespace);
+        return nessieClient.withReference(session).listTables(namespace);
     }
 
     @Override
@@ -145,13 +146,13 @@ public class TrinoNessieCatalog
     {
         BaseTable table = (BaseTable) loadTable(session, schemaTableName);
         validateTableCanBeDropped(table);
-        nessieClient.dropTable(schemaTableName, session.getUser());
+        nessieClient.withReference(session).dropTable(schemaTableName, session.getUser());
     }
 
     @Override
     public void renameTable(ConnectorSession session, SchemaTableName from, SchemaTableName to)
     {
-        nessieClient.renameTable(from, to, session.getUser());
+        nessieClient.withReference(session).renameTable(from, to, session.getUser());
     }
 
     @Override
@@ -178,7 +179,7 @@ public class TrinoNessieCatalog
     {
         String tableName = createNewTableName(schemaTableName.getTableName());
 
-        Map<String, Object> properties = nessieClient.loadNamespaceMetadata(schemaTableName.getSchemaName());
+        Map<String, Object> properties = nessieClient.withReference(session).loadNamespaceMetadata(schemaTableName.getSchemaName());
         String databaseLocation = (String) properties.get(IcebergSchemaProperties.LOCATION_PROPERTY);
 
         Path location;
