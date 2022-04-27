@@ -21,9 +21,13 @@ import io.airlift.configuration.AbstractConfigurationAwareModule;
 import io.trino.plugin.iceberg.catalog.IcebergTableOperationsProvider;
 import io.trino.plugin.iceberg.catalog.TrinoCatalogFactory;
 import org.projectnessie.client.api.NessieApiV1;
+import org.projectnessie.client.auth.BasicAuthenticationProvider;
+import org.projectnessie.client.auth.BearerAuthenticationProvider;
 import org.projectnessie.client.http.HttpClientBuilder;
 
 import static io.airlift.configuration.ConfigBinder.configBinder;
+import static io.trino.plugin.iceberg.catalog.nessie.AuthenticationType.BASIC;
+import static io.trino.plugin.iceberg.catalog.nessie.AuthenticationType.BEARER;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 public class IcebergNessieCatalogModule
@@ -41,13 +45,27 @@ public class IcebergNessieCatalogModule
 
     @Provides
     @Singleton
-    public static NessieIcebergClient createNessieIcebergClient(NessieConfig nessieConfig)
+    public static NessieIcebergClient createNessieIcebergClient(NessieConfig config)
     {
-        return new NessieIcebergClient(
-                HttpClientBuilder.builder()
-                        .withUri(nessieConfig.getServerUri())
-                        .build(NessieApiV1.class),
-                nessieConfig.getDefaultReferenceName(),
-                null);
+        HttpClientBuilder builder = HttpClientBuilder.builder()
+                .withUri(config.getServerUri())
+                .withDisableCompression(!config.isCompressionEnabled());
+
+        if (config.getReadTimeoutMillis().isPresent()) {
+            builder.withReadTimeout(config.getReadTimeoutMillis().get());
+        }
+        if (config.getConnectTimeoutMillis().isPresent()) {
+            builder.withConnectionTimeout(config.getConnectTimeoutMillis().get());
+        }
+        if (config.getAuthenticationType().isPresent()) {
+            AuthenticationType type = config.getAuthenticationType().get();
+            if (type.equals(BASIC) && config.getUsername().isPresent() && config.getPassword().isPresent()) {
+                builder.withAuthentication(BasicAuthenticationProvider.create(config.getUsername().get(), config.getPassword().get()));
+            }
+            else if (type.equals(BEARER) && config.getBearerToken().isPresent()) {
+                builder.withAuthentication(BearerAuthenticationProvider.create(config.getBearerToken().get()));
+            }
+        }
+        return new NessieIcebergClient(builder.build(NessieApiV1.class), config.getDefaultReferenceName(), null);
     }
 }

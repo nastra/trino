@@ -93,6 +93,31 @@ Property Name                                        Description
 ``iceberg.nessie.default-warehouse-dir``             Default warehouse directory for schemas created without an
                                                      explicit ``location`` property.
                                                      Example: ``/tmp``
+
+``iceberg.nessie.auth.type``                         The authentication type to use.
+                                                     Available values are ``BASIC`` or ``BEARER``.
+                                                     Example: ``BEARER``
+
+``iceberg.nessie.auth.basic.username``               The username to use with ``BASIC`` authentication.
+                                                     Example: ``test_user``
+
+``iceberg.nessie.auth.basic.password``               The password to use with ``BASIC`` authentication.
+                                                     Example: ``my$ecretPass``
+
+``iceberg.nessie.auth.bearer.token``                 The token to use with ``BEARER`` authentication.
+                                                     Example: ``SXVLUXUhIExFQ0tFUiEK``
+
+``iceberg.nessie.read-timeout-ms``                   The read timeout in milliseconds for requests
+                                                     to the Nessie server.
+                                                     Example: ``5000``
+
+``iceberg.nessie.connect-timeout-ms``                The connection timeout in milliseconds for connection
+                                                     connection requests to the Nessie server.
+                                                     Example: ``10000``
+
+``iceberg.nessie.compression-enabled``               Configure whether compression should be enabled or not for
+                                                     requests to the Nessie server, defaults to ``true``.
+
 ==================================================== ============================================================
 
 .. code-block:: text
