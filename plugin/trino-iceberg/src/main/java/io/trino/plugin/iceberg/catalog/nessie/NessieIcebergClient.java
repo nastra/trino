@@ -23,6 +23,7 @@ import io.trino.spi.connector.SchemaTableName;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.exceptions.CommitFailedException;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.util.Tasks;
 import org.projectnessie.client.api.CommitMultipleOperationsBuilder;
 import org.projectnessie.client.api.NessieApiV1;
@@ -320,27 +321,41 @@ public class NessieIcebergClient
         }
     }
 
-    public void commitTable(TableMetadata metadata, SchemaTableName tableName, String metadataLocation, String user)
+    public void commitTable(TableMetadata metadata, SchemaTableName tableName, String metadataLocation, String user, IcebergTable previousTable, FileIO fileIO)
     {
         getReference().checkMutable();
+        boolean deleteMetadataFilesFromRetries = true;
         try {
             ImmutableIcebergTable.Builder newTableBuilder = ImmutableIcebergTable.builder();
             Snapshot snapshot = metadata.currentSnapshot();
             long snapshotId = snapshot != null ? snapshot.snapshotId() : -1L;
-            IcebergTable newTable = newTableBuilder
+            ImmutableIcebergTable.Builder builder = newTableBuilder
                     .snapshotId(snapshotId)
                     .schemaId(metadata.currentSchemaId())
                     .specId(metadata.defaultSpecId())
                     .sortOrderId(metadata.defaultSortOrderId())
-                    .metadataLocation(metadataLocation)
+                    .metadataLocation(metadataLocation);
+
+            Branch asBranch = getReference().getAsBranch();
+            if (null != previousTable) {
+                builder.id(previousTable.getId());
+                if (!metadata.properties().get("NESSIE_COMMIT_ID_PROPERTY").equals(asBranch.getHash())) {
+                    throw new CommitFailedException(format("Cannot commit: The loaded table points to an older " +
+                                    "commit hash (%s) than %s and will result in a conflict on the Nessie server",
+                            metadata.properties().get("NESSIE_COMMIT_ID_PROPERTY"), asBranch.getHash()));
+                }
+                asBranch = Branch.of(asBranch.getName(), metadata.properties().get("NESSIE_COMMIT_ID_PROPERTY"));
+            }
+            IcebergTable newTable = builder
                     .build();
 
             Branch branch = nessieApi.commitMultipleOperations()
                     .operation(Operation.Put.of(NessieIcebergUtil.toKey(tableName), newTable))
                     .commitMeta(buildCommitMeta(user, format("Trino Iceberg add table %s", tableName)))
-                    .branch(getReference().getAsBranch())
+                    .branch(asBranch)
                     .commit();
             getReference().updateReference(branch);
+            deleteMetadataFilesFromRetries = false;
         }
         catch (NessieNotFoundException e) {
             throw new TrinoException(ICEBERG_COMMIT_ERROR, format("Cannot commit: ref '%s' no longer exists", getReference().getName()), e);
@@ -349,9 +364,14 @@ public class NessieIcebergClient
             // CommitFailedException is handled as a special case in the Iceberg library. This commit will automatically retry
             throw new CommitFailedException(e, "Cannot commit: ref hash is out of date. Update the ref '%s' and try again", getReference().getName());
         }
+        finally {
+            if (deleteMetadataFilesFromRetries) {
+                fileIO.deleteFile(metadataLocation);
+            }
+        }
     }
 
-    private class UpdateableReference
+    class UpdateableReference
     {
         private Reference reference;
         private final boolean mutable;

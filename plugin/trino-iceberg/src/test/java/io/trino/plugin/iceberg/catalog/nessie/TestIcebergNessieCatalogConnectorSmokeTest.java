@@ -20,7 +20,6 @@ import io.trino.plugin.iceberg.SchemaInitializer;
 import io.trino.testing.QueryRunner;
 import io.trino.testing.TestingConnectorBehavior;
 import io.trino.testing.containers.NessieContainer;
-import org.testng.SkipException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -117,12 +116,5 @@ public class TestIcebergNessieCatalogConnectorSmokeTest
     {
         assertThatThrownBy(super::testRenameSchema)
                 .hasStackTraceContaining("renameNamespace is not supported for Iceberg Nessie catalogs");
-    }
-
-    @Test
-    @Override
-    public void testDeleteRowsConcurrently()
-    {
-        throw new SkipException("skipped for now due to flakiness");
     }
 }

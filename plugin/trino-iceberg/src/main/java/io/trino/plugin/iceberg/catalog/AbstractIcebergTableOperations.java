@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -206,7 +207,11 @@ public abstract class AbstractIcebergTableOperations
         return newTableMetadataFilePath;
     }
 
-    protected void refreshFromMetadataLocation(String newLocation)
+    protected void refreshFromMetadataLocation(String newLocation) {
+        refreshFromMetadataLocation(newLocation, (metadataLocation) -> TableMetadataParser.read(fileIo, io().newInputFile(metadataLocation)));
+    }
+
+    protected void refreshFromMetadataLocation(String newLocation, Function<String, TableMetadata> metadataLoader)
     {
         // use null-safe equality check because new tables have a null metadata location
         if (Objects.equals(currentMetadataLocation, newLocation)) {
@@ -219,8 +224,7 @@ public abstract class AbstractIcebergTableOperations
                 .retry(20)
                 .exponentialBackoff(100, 5000, 600000, 4.0)
                 .stopRetryOn(org.apache.iceberg.exceptions.NotFoundException.class) // qualified name, as this is NOT the io.trino.spi.connector.NotFoundException
-                .run(metadataLocation -> newMetadata.set(
-                        TableMetadataParser.read(fileIo, io().newInputFile(metadataLocation))));
+                .run(metadataLocation -> newMetadata.set(metadataLoader.apply(newLocation)));
 
         String newUUID = newMetadata.get().uuid();
         if (currentMetadata != null) {

@@ -13,14 +13,18 @@
  */
 package io.trino.plugin.iceberg.catalog.nessie;
 
+import com.google.common.collect.Maps;
 import io.trino.plugin.iceberg.catalog.AbstractIcebergTableOperations;
 import io.trino.spi.connector.ConnectorSession;
 import io.trino.spi.connector.SchemaTableName;
 import io.trino.spi.connector.TableNotFoundException;
+import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.io.FileIO;
 import org.projectnessie.model.IcebergTable;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static com.google.common.base.Verify.verify;
@@ -30,6 +34,7 @@ public class NessieIcebergTableOperations
         extends AbstractIcebergTableOperations
 {
     private final NessieIcebergClient nessieClient;
+    private IcebergTable loadedTable;
 
     protected NessieIcebergTableOperations(
             NessieIcebergClient nessieClient,
@@ -59,6 +64,31 @@ public class NessieIcebergTableOperations
     }
 
     @Override
+    protected void refreshFromMetadataLocation(String newLocation)
+    {
+        super.refreshFromMetadataLocation(newLocation, l -> loadTableMetadata(l, nessieClient.getReference().getReference().getHash()));
+    }
+
+    private TableMetadata loadTableMetadata(String metadataLocation, String loadedAtHash)
+    {
+        TableMetadata metadata = TableMetadataParser.read(fileIo, io().newInputFile(metadataLocation));
+        Map<String, String> newProperties = Maps.newHashMap(metadata.properties());
+        newProperties.put("NESSIE_COMMIT_ID_PROPERTY", loadedAtHash);
+
+        TableMetadata.Builder builder = TableMetadata.buildFrom(metadata).setProperties(newProperties)
+                .setCurrentSchema(loadedTable.getSchemaId())
+                .setDefaultSortOrder(loadedTable.getSortOrderId())
+                .setDefaultPartitionSpec(loadedTable.getSpecId())
+                .withMetadataLocation(metadataLocation)
+                .setProperties(newProperties);
+        if (loadedTable.getSnapshotId() != -1) {
+            builder.setBranchSnapshot(loadedTable.getSnapshotId(), SnapshotRef.MAIN_BRANCH);
+        }
+
+        return builder.discardChanges().build();
+    }
+
+    @Override
     protected String getRefreshedLocation(boolean invalidateCaches)
     {
         IcebergTable table = nessieClient.loadTable(new SchemaTableName(database, tableName));
@@ -67,14 +97,15 @@ public class NessieIcebergTableOperations
             throw new TableNotFoundException(getSchemaTableName());
         }
 
-        return table.getMetadataLocation();
+        loadedTable = table;
+        return loadedTable.getMetadataLocation();
     }
 
     @Override
     protected void commitNewTable(TableMetadata metadata)
     {
         verify(version == -1, "commitNewTable called on a table which already exists");
-        nessieClient.commitTable(metadata, new SchemaTableName(database, this.tableName), writeNewMetadata(metadata, 0), session.getUser());
+        nessieClient.commitTable(metadata, new SchemaTableName(database, this.tableName), writeNewMetadata(metadata, 0), session.getUser(), loadedTable, fileIo);
         shouldRefresh = true;
     }
 
@@ -82,7 +113,7 @@ public class NessieIcebergTableOperations
     protected void commitToExistingTable(TableMetadata base, TableMetadata metadata)
     {
         verify(version >= 0, "commitToExistingTable called on a new table");
-        nessieClient.commitTable(metadata, new SchemaTableName(database, this.tableName), writeNewMetadata(metadata, version + 1), session.getUser());
+        nessieClient.commitTable(metadata, new SchemaTableName(database, this.tableName), writeNewMetadata(metadata, version + 1), session.getUser(), loadedTable, fileIo);
         shouldRefresh = true;
     }
 }

@@ -23,7 +23,6 @@ import io.trino.testing.QueryRunner;
 import io.trino.testing.TestingConnectorBehavior;
 import io.trino.testing.containers.NessieContainer;
 import io.trino.tpch.TpchTable;
-import org.testng.SkipException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -132,17 +131,5 @@ public abstract class BaseIcebergNessieConnectorTest
     {
         assertThat(computeActual("SHOW CREATE SCHEMA tpch").getOnlyValue().toString())
                 .matches("CREATE SCHEMA iceberg.tpch");
-    }
-
-    @Override
-    public void testUpdateRowConcurrently()
-    {
-        throw new SkipException("skipped for now due to flakiness");
-    }
-
-    @Override
-    public void testInsertRowConcurrently()
-    {
-        throw new SkipException("skipped for now due to flakiness");
     }
 }
