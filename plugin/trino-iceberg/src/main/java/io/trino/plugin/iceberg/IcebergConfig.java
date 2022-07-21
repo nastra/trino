@@ -63,6 +63,9 @@ public class IcebergConfig
     private double minimumAssignedSplitWeight = 0.05;
     private boolean allowLegacySnapshotSyntax;
     private Optional<String> materializedViewsStorageSchema = Optional.empty();
+    private String credential;
+    private String token;
+    private String restUri;
 
     public CatalogType getCatalogType()
     {
@@ -73,6 +76,42 @@ public class IcebergConfig
     public IcebergConfig setCatalogType(CatalogType catalogType)
     {
         this.catalogType = catalogType;
+        return this;
+    }
+
+    public Optional<String> getToken()
+    {
+        return Optional.ofNullable(token);
+    }
+
+    @Config("iceberg.rest.token")
+    public IcebergConfig setToken(String token)
+    {
+        this.token = token;
+        return this;
+    }
+
+    public Optional<String> getCredential()
+    {
+        return Optional.ofNullable(credential);
+    }
+
+    @Config("iceberg.rest.credential")
+    public IcebergConfig setCredential(String credential)
+    {
+        this.credential = credential;
+        return this;
+    }
+
+    public Optional<String> getBaseUri()
+    {
+        return Optional.ofNullable(this.restUri);
+    }
+
+    @Config("iceberg.rest.uri")
+    public IcebergConfig setBaseUri(String uri)
+    {
+        this.restUri = uri;
         return this;
     }
 
