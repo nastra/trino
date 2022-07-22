@@ -15,13 +15,11 @@ package io.trino.plugin.iceberg.catalog.rest;
 
 import io.airlift.log.Logger;
 import io.trino.plugin.base.CatalogName;
-import io.trino.plugin.hive.HdfsEnvironment;
 import io.trino.plugin.hive.NodeVersion;
 import io.trino.plugin.iceberg.IcebergConfig;
 import io.trino.plugin.iceberg.catalog.TrinoCatalog;
 import io.trino.plugin.iceberg.catalog.TrinoCatalogFactory;
 import io.trino.spi.security.ConnectorIdentity;
-import io.trino.spi.type.TypeManager;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.rest.RESTSessionCatalog;
 import org.apache.iceberg.rest.auth.OAuth2Properties;
@@ -39,8 +37,6 @@ public class TrinoIcebergRESTCatalogFactory
     private static final Logger log = Logger.get(TrinoIcebergRESTCatalogFactory.class);
     private final CatalogName catalogName;
     private final IcebergConfig config;
-    private final TypeManager typeManager;
-    private final HdfsEnvironment hdfsEnvironment;
     private final String trinoVersion;
 
     private volatile RESTSessionCatalog icebergCatalog;
@@ -49,14 +45,10 @@ public class TrinoIcebergRESTCatalogFactory
     public TrinoIcebergRESTCatalogFactory(
             CatalogName catalogName,
             IcebergConfig icebergConfig,
-            TypeManager typeManager,
-            HdfsEnvironment hdfsEnvironment,
             NodeVersion nodeVersion)
     {
         this.catalogName = catalogName;
         this.config = icebergConfig;
-        this.hdfsEnvironment = requireNonNull(hdfsEnvironment, "hdfsEnvironment is null");
-        this.typeManager = requireNonNull(typeManager, "typeManager is null");
         this.trinoVersion = requireNonNull(nodeVersion, "nodeVersion is null").toString();
     }
 

@@ -211,6 +211,23 @@ public class TestIcebergPlugin
                 .hasMessageContaining("Configuration property 'hive.hive-views.enabled' was not used");
     }
 
+    @Test
+    public void testRESTMetastore()
+    {
+        ConnectorFactory factory = getConnectorFactory();
+
+        factory.create(
+                        "test",
+                        Map.of(
+                                "iceberg.catalog.type", "rest",
+                                "iceberg.rest.token", "token",
+                                "iceberg.rest.credential", "credential",
+                                "iceberg.rest.uri", "https://foo:1234"),
+                        new TestingConnectorContext())
+                .shutdown();
+    }
+
+
     private static ConnectorFactory getConnectorFactory()
     {
         return getOnlyElement(new IcebergPlugin().getConnectorFactories());
