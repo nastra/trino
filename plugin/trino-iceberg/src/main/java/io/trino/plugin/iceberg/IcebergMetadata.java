@@ -645,11 +645,11 @@ public class IcebergMetadata
         try {
             Path path = new Path(location);
             FileSystem fileSystem = hdfsEnvironment.getFileSystem(hdfsContext, path);
-            if (fileSystem.exists(path) && fileSystem.listFiles(path, true).hasNext()) {
-                throw new TrinoException(ICEBERG_FILESYSTEM_ERROR, format("" +
-                        "Cannot create a table on a non-empty location: %s, set 'iceberg.unique-table-location=true' in your Iceberg catalog properties " +
-                        "to use unique table locations for every table.", location));
-            }
+//            if (fileSystem.exists(path) && fileSystem.listFiles(path, true).hasNext()) {
+//                throw new TrinoException(ICEBERG_FILESYSTEM_ERROR, format("" +
+//                        "Cannot create a table on a non-empty location: %s, set 'iceberg.unique-table-location=true' in your Iceberg catalog properties " +
+//                        "to use unique table locations for every table.", location));
+//            }
             return new IcebergWritableTableHandle(
                     tableMetadata.getTable(),
                     SchemaParser.toJson(transaction.table().schema()),
@@ -1721,7 +1721,7 @@ public class IcebergMetadata
             Table icebergTable = catalog.loadTable(session, table.getSchemaTableName());
 
             Long snapshotId = table.getSnapshotId().orElseThrow(() -> new IllegalStateException("Snapshot id must be present"));
-            Set<Integer> partitionSpecIds = icebergTable.snapshot(snapshotId).allManifests().stream()
+            Set<Integer> partitionSpecIds = icebergTable.snapshot(snapshotId).allManifests(icebergTable.io()).stream()
                     .map(ManifestFile::partitionSpecId)
                     .collect(toImmutableSet());
 

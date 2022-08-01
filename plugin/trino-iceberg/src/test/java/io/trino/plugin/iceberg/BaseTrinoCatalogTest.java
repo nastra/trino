@@ -25,6 +25,7 @@ import io.trino.spi.type.VarcharType;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.types.Types;
 import org.testng.annotations.Test;
 
@@ -40,6 +41,7 @@ import static io.trino.testing.TestingConnectorSession.SESSION;
 import static io.trino.testing.assertions.Assert.assertEquals;
 import static io.trino.testing.sql.TestTable.randomTableSuffix;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.testng.Assert.assertNotEquals;
 
 public abstract class BaseTrinoCatalogTest
@@ -73,6 +75,7 @@ public abstract class BaseTrinoCatalogTest
         String namespace = "test_create_table_" + randomTableSuffix();
         String table = "tableName";
         SchemaTableName schemaTableName = new SchemaTableName(namespace, table);
+        Map<String, String> tableProperties = Map.of("test_key", "test_value");
         try {
             catalog.createNamespace(SESSION, namespace, ImmutableMap.of(), new TrinoPrincipal(PrincipalType.USER, SESSION.getUser()));
             catalog.newCreateTableTransaction(
@@ -81,10 +84,10 @@ public abstract class BaseTrinoCatalogTest
                     new Schema(Types.NestedField.of(1, true, "col1", Types.LongType.get())),
                     PartitionSpec.unpartitioned(),
                     tmpDirectory.toAbsolutePath().toString(),
-                    ImmutableMap.of())
+                    tableProperties)
                     .commitTransaction();
             assertThat(catalog.listTables(SESSION, Optional.of(namespace))).contains(schemaTableName);
-            assertThat(catalog.listTables(SESSION, Optional.empty())).contains(schemaTableName);
+            assertThatThrownBy(() -> catalog.listTables(SESSION, Optional.empty())).isInstanceOf(NoSuchNamespaceException.class);
 
             Table icebergTable = catalog.loadTable(SESSION, schemaTableName);
             assertEquals(icebergTable.name(), quotedTableName(schemaTableName));
@@ -92,11 +95,11 @@ public abstract class BaseTrinoCatalogTest
             assertEquals(icebergTable.schema().columns().get(0).name(), "col1");
             assertEquals(icebergTable.schema().columns().get(0).type(), Types.LongType.get());
             assertEquals(icebergTable.location(), tmpDirectory.toAbsolutePath().toString());
-            assertEquals(icebergTable.properties(), ImmutableMap.of());
+            assertThat(icebergTable.properties()).containsAllEntriesOf(tableProperties);
 
             catalog.dropTable(SESSION, schemaTableName);
             assertThat(catalog.listTables(SESSION, Optional.of(namespace))).doesNotContain(schemaTableName);
-            assertThat(catalog.listTables(SESSION, Optional.empty())).doesNotContain(schemaTableName);
+            assertThatThrownBy(() -> catalog.listTables(SESSION, Optional.empty())).isInstanceOf(NoSuchNamespaceException.class);
         }
         finally {
             try {

@@ -83,6 +83,9 @@ public class TestIcebergConfig
                 .put("iceberg.minimum-assigned-split-weight", "0.01")
                 .put("iceberg.allow-legacy-snapshot-syntax", "true")
                 .put("iceberg.materialized-views.storage-schema", "mv_storage_schema")
+                .put("iceberg.rest.uri", "uri")
+                .put("iceberg.rest.token", "token")
+                .put("iceberg.rest.credential", "credential")
                 .buildOrThrow();
 
         IcebergConfig expected = new IcebergConfig()
