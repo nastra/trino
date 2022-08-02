@@ -36,6 +36,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SessionCatalog;
+import org.apache.iceberg.catalog.SessionCatalog.SessionContext;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.RESTException;
@@ -126,11 +127,18 @@ public class TrinoRESTCatalog
     @Override
     public List<SchemaTableName> listTables(ConnectorSession session, Optional<String> namespace)
     {
-        List<String> namespaces = namespace.map(List::of).orElseGet(() -> listNamespaces(session));
+        SessionContext sessionContext = convert(session);
+        List<Namespace> namespaces = namespace.map(List::of)
+                .orElseGet(() -> listNamespaces(session))
+                .stream()
+                .map(Namespace::of)
+                .filter(ns -> sessionCatalog.namespaceExists(sessionContext, ns))
+                .collect(Collectors.toList());
+
         ImmutableList.Builder<SchemaTableName> tables = ImmutableList.builder();
-        for (String ns : namespaces) {
+        for (Namespace ns : namespaces) {
             tables.addAll(
-                    sessionCatalog.listTables(convert(session), Namespace.of(ns))
+                    sessionCatalog.listTables(sessionContext, ns)
                             .stream()
                             .map(id -> SchemaTableName.schemaTableName(id.namespace().toString(),
                                     id.name()))
