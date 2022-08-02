@@ -102,25 +102,6 @@ public class TestTrinoRESTCatalogConnectorTest
     }
 
     @Override
-    public void testSelectInformationSchemaColumns()
-    {
-        // FIXME: Queries pass empty namespace to listTables which results in NoSuchNamespceException
-        //        This constraint conflicts with the Iceberg TrinoCatalog Tests for create table.
-        // FIXME: LIKE query returning incorrect column names
-        // super.testSelectInformationSchemaColumns();
-        throw new SkipException("Empty namespace used in listTables");
-    }
-
-    @Override
-    public void testSelectInformationSchemaTables()
-    {
-        // FIXME: Queries pass empty namespace to listTables which results in NoSuchNamespceException
-        //        This constraint conflicts with the Iceberg TrinoCatalog Tests for create table.
-        // super.testSelectInformationSchemaTables();
-        throw new SkipException("Empty namespace used in listTables");
-    }
-
-    @Override
     public void testCreateTableLike()
     {
         // FIXME: Bad constraint on table location check

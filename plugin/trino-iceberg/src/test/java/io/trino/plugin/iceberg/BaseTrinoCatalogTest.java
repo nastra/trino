@@ -25,7 +25,6 @@ import io.trino.spi.type.VarcharType;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.types.Types;
 import org.testng.annotations.Test;
 
@@ -41,7 +40,6 @@ import static io.trino.testing.TestingConnectorSession.SESSION;
 import static io.trino.testing.assertions.Assert.assertEquals;
 import static io.trino.testing.sql.TestTable.randomTableSuffix;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.testng.Assert.assertNotEquals;
 
 public abstract class BaseTrinoCatalogTest
@@ -87,7 +85,7 @@ public abstract class BaseTrinoCatalogTest
                     tableProperties)
                     .commitTransaction();
             assertThat(catalog.listTables(SESSION, Optional.of(namespace))).contains(schemaTableName);
-            assertThatThrownBy(() -> catalog.listTables(SESSION, Optional.empty())).isInstanceOf(NoSuchNamespaceException.class);
+            assertThat(catalog.listTables(SESSION, Optional.empty())).contains(schemaTableName);
 
             Table icebergTable = catalog.loadTable(SESSION, schemaTableName);
             assertEquals(icebergTable.name(), quotedTableName(schemaTableName));
@@ -99,7 +97,7 @@ public abstract class BaseTrinoCatalogTest
 
             catalog.dropTable(SESSION, schemaTableName);
             assertThat(catalog.listTables(SESSION, Optional.of(namespace))).doesNotContain(schemaTableName);
-            assertThatThrownBy(() -> catalog.listTables(SESSION, Optional.empty())).isInstanceOf(NoSuchNamespaceException.class);
+            assertThat(catalog.listTables(SESSION, Optional.empty())).doesNotContain(schemaTableName);
         }
         finally {
             try {

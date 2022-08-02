@@ -13,6 +13,7 @@
  */
 package io.trino.plugin.iceberg.catalog.rest;
 
+import com.google.common.collect.ImmutableList;
 import io.jsonwebtoken.impl.DefaultJwtBuilder;
 import io.jsonwebtoken.jackson.io.JacksonSerializer;
 import io.trino.plugin.base.CatalogName;
@@ -36,7 +37,6 @@ import org.apache.iceberg.Transaction;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SessionCatalog;
 import org.apache.iceberg.catalog.TableIdentifier;
-import org.apache.iceberg.exceptions.NoSuchNamespaceException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.RESTException;
 import org.apache.iceberg.rest.RESTSessionCatalog;
@@ -126,14 +126,17 @@ public class TrinoRESTCatalog
     @Override
     public List<SchemaTableName> listTables(ConnectorSession session, Optional<String> namespace)
     {
-        if (namespace.isPresent()) {
-            return sessionCatalog.listTables(convert(session), Namespace.of(namespace.get())).stream()
-                    .map(id -> SchemaTableName.schemaTableName(id.namespace().toString(), id.name()))
-                    .collect(Collectors.toList());
+        List<String> namespaces = namespace.map(List::of).orElseGet(() -> listNamespaces(session));
+        ImmutableList.Builder<SchemaTableName> tables = ImmutableList.builder();
+        for (String ns : namespaces) {
+            tables.addAll(
+                    sessionCatalog.listTables(convert(session), Namespace.of(ns))
+                            .stream()
+                            .map(id -> SchemaTableName.schemaTableName(id.namespace().toString(),
+                                    id.name()))
+                            .collect(Collectors.toList()));
         }
-        else {
-            throw new NoSuchNamespaceException("No such namespace: %s", namespace);
-        }
+        return tables.build();
     }
 
     @Override
