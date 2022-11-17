@@ -400,6 +400,14 @@
                 <groupId>org.basepom.maven</groupId>
                 <artifactId>duplicate-finder-maven-plugin</artifactId>
                 <configuration>
+                    <ignoredDependencies>
+                        <!-- ships google protobuf files -->
+                        <dependency>
+                            <groupId>org.apache.orc</groupId>
+                            <artifactId>orc-core</artifactId>
+                            <classifier>nohive</classifier>
+                        </dependency>
+                    </ignoredDependencies>
                     <ignoredResourcePatterns>
                         <!-- com.amazonaws:aws-java-sdk-core and software.amazon.awssdk:sdk-core MIME type file duplicate-->
                         <ignoredResourcePattern>mime.types</ignoredResourcePattern>
