@@ -19,8 +19,10 @@ import io.trino.spi.connector.ConnectorSession;
 import io.trino.spi.connector.SchemaTableName;
 import io.trino.spi.connector.TableNotFoundException;
 import org.apache.iceberg.TableMetadata;
+import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.nessie.NessieIcebergClient;
+import org.projectnessie.error.NessieConflictException;
 import org.projectnessie.error.NessieNotFoundException;
 import org.projectnessie.model.IcebergTable;
 
@@ -28,15 +30,16 @@ import java.util.Optional;
 
 import static com.google.common.base.Verify.verify;
 import static io.trino.plugin.iceberg.IcebergErrorCode.ICEBERG_CATALOG_ERROR;
+import static io.trino.plugin.iceberg.IcebergErrorCode.ICEBERG_COMMIT_ERROR;
+import static io.trino.plugin.iceberg.catalog.nessie.NessieIcebergUtil.toIdentifier;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
-import static org.apache.iceberg.nessie.NessieIcebergUtil.commitTable;
-import static org.apache.iceberg.nessie.NessieIcebergUtil.toIdentifier;
 
 public class NessieIcebergTableOperations
         extends AbstractIcebergTableOperations
 {
     private final NessieIcebergClient nessieClient;
+    private IcebergTable table;
 
     protected NessieIcebergTableOperations(
             NessieIcebergClient nessieClient,
@@ -64,7 +67,7 @@ public class NessieIcebergTableOperations
             nessieClient.refresh();
         }
         catch (NessieNotFoundException e) {
-            throw new TrinoException(ICEBERG_CATALOG_ERROR, format("Failed to refresh as ref '%s' is no longer valid.", nessieClient.getRef()), e);
+            throw new TrinoException(ICEBERG_CATALOG_ERROR, format("Failed to refresh as ref '%s' is no longer valid.", nessieClient.getRefName()), e);
         }
     }
 
@@ -78,7 +81,7 @@ public class NessieIcebergTableOperations
     @Override
     protected String getRefreshedLocation(boolean invalidateCaches)
     {
-        IcebergTable table = nessieClient.table(toIdentifier(new SchemaTableName(database, tableName)));
+        table = nessieClient.table(toIdentifier(new SchemaTableName(database, tableName)));
 
         if (table == null) {
             throw new TableNotFoundException(getSchemaTableName());
@@ -91,7 +94,16 @@ public class NessieIcebergTableOperations
     protected void commitNewTable(TableMetadata metadata)
     {
         verify(version.isEmpty(), "commitNewTable called on a table which already exists");
-        commitTable(nessieClient, metadata, new SchemaTableName(database, this.tableName), writeNewMetadata(metadata, 0), session.getUser());
+        try {
+            nessieClient.commitTable(null, metadata, writeNewMetadata(metadata, 0), table, NessieIcebergUtil.toKey(new SchemaTableName(database, this.tableName)));
+        }
+        catch (NessieNotFoundException e) {
+            throw new TrinoException(ICEBERG_COMMIT_ERROR, format("Cannot commit: ref '%s' no longer exists", nessieClient.getRefName()), e);
+        }
+        catch (NessieConflictException e) {
+            // CommitFailedException is handled as a special case in the Iceberg library. This commit will automatically retry
+            throw new CommitFailedException(e, "Cannot commit: ref hash is out of date. Update the ref '%s' and try again", nessieClient.getRefName());
+        }
         shouldRefresh = true;
     }
 
@@ -99,7 +111,16 @@ public class NessieIcebergTableOperations
     protected void commitToExistingTable(TableMetadata base, TableMetadata metadata)
     {
         verify(version.orElseThrow() >= 0, "commitToExistingTable called on a new table");
-        commitTable(nessieClient, metadata, new SchemaTableName(database, this.tableName), writeNewMetadata(metadata, version.getAsInt() + 1), session.getUser());
+        try {
+            nessieClient.commitTable(base, metadata, writeNewMetadata(metadata, version.getAsInt() + 1), table, NessieIcebergUtil.toKey(new SchemaTableName(database, this.tableName)));
+        }
+        catch (NessieNotFoundException e) {
+            throw new TrinoException(ICEBERG_COMMIT_ERROR, format("Cannot commit: ref '%s' no longer exists", nessieClient.getRefName()), e);
+        }
+        catch (NessieConflictException e) {
+            // CommitFailedException is handled as a special case in the Iceberg library. This commit will automatically retry
+            throw new CommitFailedException(e, "Cannot commit: ref hash is out of date. Update the ref '%s' and try again", nessieClient.getRefName());
+        }
         shouldRefresh = true;
     }
 }

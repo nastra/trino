@@ -52,9 +52,9 @@ import static com.google.common.collect.ImmutableList.toImmutableList;
 import static io.trino.plugin.iceberg.IcebergUtil.getIcebergTableWithMetadata;
 import static io.trino.plugin.iceberg.IcebergUtil.quotedTableName;
 import static io.trino.plugin.iceberg.IcebergUtil.validateTableCanBeDropped;
+import static io.trino.plugin.iceberg.catalog.nessie.NessieIcebergUtil.toIdentifier;
 import static io.trino.spi.StandardErrorCode.NOT_SUPPORTED;
 import static java.util.Objects.requireNonNull;
-import static org.apache.iceberg.nessie.NessieIcebergUtil.toIdentifier;
 
 public class TrinoNessieCatalog
         extends AbstractTrinoCatalog
