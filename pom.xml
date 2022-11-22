@@ -66,8 +66,8 @@
         <dep.confluent.version>5.5.2</dep.confluent.version>
         <dep.casandra.version>4.14.0</dep.casandra.version>
         <dep.minio.version>7.1.4</dep.minio.version>
-        <dep.iceberg.version>1.0.0</dep.iceberg.version>
-        <dep.nessie.version>0.41.0</dep.nessie.version>
+        <dep.iceberg.version>1.2.0-SNAPSHOT</dep.iceberg.version>
+        <dep.nessie.version>0.44.0</dep.nessie.version>
         <dep.spotbugs-annotations.version>4.7.2</dep.spotbugs-annotations.version>
 
         <dep.docker.images.version>72</dep.docker.images.version>
@@ -1943,6 +1943,7 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <configuration>
+                        <fail>false</fail>
                         <rules>
                             <compound implementation="com.github.ferstl.maven.pomenforcers.CompoundPedanticEnforcer">
                                 <enforcers>POM_SECTION_ORDER,MODULE_ORDER,DEPENDENCY_MANAGEMENT_ORDER,DEPENDENCY_ORDER,DEPENDENCY_ELEMENT</enforcers>
