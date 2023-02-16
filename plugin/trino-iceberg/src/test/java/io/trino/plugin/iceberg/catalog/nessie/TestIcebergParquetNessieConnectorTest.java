@@ -14,6 +14,7 @@
 package io.trino.plugin.iceberg.catalog.nessie;
 
 import io.trino.Session;
+import java.util.Optional;
 
 import static io.trino.plugin.iceberg.IcebergFileFormat.PARQUET;
 
@@ -47,5 +48,16 @@ public class TestIcebergParquetNessieConnectorTest
         return !(typeName.equalsIgnoreCase("varbinary") ||
                 typeName.equalsIgnoreCase("time(6)") ||
                 typeName.equalsIgnoreCase("timestamp(6) with time zone"));
+    }
+
+    @Override
+    protected Optional<SetColumnTypeSetup> filterSetColumnTypesDataProvider(SetColumnTypeSetup setup)
+    {
+        switch ("%s -> %s".formatted(setup.sourceColumnType(), setup.newColumnType())) {
+            case "row(x integer) -> row(y integer)":
+                // TODO https://github.com/trinodb/trino/issues/15822 The connector returns incorrect NULL when a field in row type doesn't exist in Parquet files
+                return Optional.of(setup.withNewValueLiteral("NULL"));
+        }
+        return super.filterSetColumnTypesDataProvider(setup);
     }
 }
