@@ -62,6 +62,7 @@ public abstract class BaseIcebergNessieConnectorTest
     }
 
     @BeforeClass(dependsOnMethods = "init")
+    @Override
     public void initStorageTimePrecision()
     {
         super.initStorageTimePrecision();
