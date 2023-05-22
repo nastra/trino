@@ -34,8 +34,8 @@ public class IcebergNessieCatalogModule
     @Override
     protected void setup(Binder binder)
     {
-        configBinder(binder).bindConfig(NessieConfig.class);
-        binder.bind(IcebergTableOperationsProvider.class).to(NessieIcebergTableOperationsProvider.class).in(Scopes.SINGLETON);
+        configBinder(binder).bindConfig(IcebergNessieCatalogConfig.class);
+        binder.bind(IcebergTableOperationsProvider.class).to(IcebergNessieTableOperationsProvider.class).in(Scopes.SINGLETON);
         newExporter(binder).export(IcebergTableOperationsProvider.class).withGeneratedName();
         binder.bind(TrinoCatalogFactory.class).to(TrinoNessieCatalogFactory.class).in(Scopes.SINGLETON);
         newExporter(binder).export(TrinoCatalogFactory.class).withGeneratedName();
@@ -43,13 +43,13 @@ public class IcebergNessieCatalogModule
 
     @Provides
     @Singleton
-    public static NessieIcebergClient createNessieIcebergClient(NessieConfig nessieConfig)
+    public static NessieIcebergClient createNessieIcebergClient(IcebergNessieCatalogConfig icebergNessieCatalogConfig)
     {
         return new NessieIcebergClient(
                 HttpClientBuilder.builder()
-                        .withUri(nessieConfig.getServerUri())
+                        .withUri(icebergNessieCatalogConfig.getServerUri())
                         .build(NessieApiV1.class),
-                nessieConfig.getDefaultReferenceName(),
+                icebergNessieCatalogConfig.getDefaultReferenceName(),
                 null,
                 ImmutableMap.of());
     }

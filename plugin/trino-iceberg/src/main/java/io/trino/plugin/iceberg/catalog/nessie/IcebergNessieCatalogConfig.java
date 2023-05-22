@@ -19,11 +19,13 @@ import io.airlift.configuration.ConfigDescription;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-public class NessieConfig
+import java.net.URI;
+
+public class IcebergNessieCatalogConfig
 {
     private String defaultReferenceName = "main";
-    private String serverUri;
     private String defaultWarehouseDir;
+    private URI serverUri;
 
     @NotNull
     public String getDefaultReferenceName()
@@ -31,25 +33,27 @@ public class NessieConfig
         return defaultReferenceName;
     }
 
-    @Config("iceberg.nessie.ref")
+    @Config("iceberg.nessie-catalog.ref")
     @ConfigDescription("The default Nessie reference to work on")
-    public NessieConfig setDefaultReferenceName(String defaultReferenceName)
+    public IcebergNessieCatalogConfig setDefaultReferenceName(String defaultReferenceName)
     {
         this.defaultReferenceName = defaultReferenceName;
         return this;
     }
 
     @NotNull
-    public String getServerUri()
+    public URI getServerUri()
     {
         return serverUri;
     }
 
-    @Config("iceberg.nessie.uri")
+    @Config("iceberg.nessie-catalog.uri")
     @ConfigDescription("The URI to connect to the Nessie server")
-    public NessieConfig setServerUri(String serverUri)
+    public IcebergNessieCatalogConfig setServerUri(String serverUri)
     {
-        this.serverUri = serverUri;
+        if (serverUri != null) {
+            this.serverUri = URI.create(serverUri);
+        }
         return this;
     }
 
@@ -59,9 +63,9 @@ public class NessieConfig
         return defaultWarehouseDir;
     }
 
-    @Config("iceberg.nessie.default-warehouse-dir")
+    @Config("iceberg.nessie-catalog.default-warehouse-dir")
     @ConfigDescription("The default warehouse to use for Nessie")
-    public NessieConfig setDefaultWarehouseDir(String defaultWarehouseDir)
+    public IcebergNessieCatalogConfig setDefaultWarehouseDir(String defaultWarehouseDir)
     {
         this.defaultWarehouseDir = defaultWarehouseDir;
         return this;

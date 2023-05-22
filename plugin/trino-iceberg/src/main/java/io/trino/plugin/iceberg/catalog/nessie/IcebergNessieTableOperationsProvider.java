@@ -27,14 +27,14 @@ import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
-public class NessieIcebergTableOperationsProvider
+public class IcebergNessieTableOperationsProvider
         implements IcebergTableOperationsProvider
 {
     private final TrinoFileSystemFactory fileSystemFactory;
     private final NessieIcebergClient nessieClient;
 
     @Inject
-    public NessieIcebergTableOperationsProvider(TrinoFileSystemFactory fileSystemFactory, NessieIcebergClient nessieClient)
+    public IcebergNessieTableOperationsProvider(TrinoFileSystemFactory fileSystemFactory, NessieIcebergClient nessieClient)
     {
         this.fileSystemFactory = requireNonNull(fileSystemFactory, "fileSystemFactory is null");
         this.nessieClient = requireNonNull(nessieClient, "nessieClient is null");
@@ -49,7 +49,7 @@ public class NessieIcebergTableOperationsProvider
             Optional<String> owner,
             Optional<String> location)
     {
-        return new NessieIcebergTableOperations(
+        return new IcebergNessieTableOperations(
                 nessieClient,
                 new ForwardingFileIo(fileSystemFactory.create(session)),
                 session,

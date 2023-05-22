@@ -273,13 +273,8 @@ public class TestIcebergPlugin
                 .shutdown();
     }
 
-    private static ConnectorFactory getConnectorFactory()
-    {
-        return getOnlyElement(new IcebergPlugin().getConnectorFactories());
-    }
-
     @Test
-    public void testNessieMetastore()
+    public void testNessieCatalog()
     {
         ConnectorFactory factory = getConnectorFactory();
 
@@ -287,9 +282,14 @@ public class TestIcebergPlugin
                         "test",
                         Map.of(
                                 "iceberg.catalog.type", "nessie",
-                                "iceberg.nessie.default-warehouse-dir", "/tmp",
-                                "iceberg.nessie.uri", "http://foo:1234"),
+                                "iceberg.nessie-catalog.default-warehouse-dir", "/tmp",
+                                "iceberg.nessie-catalog.uri", "http://foo:1234"),
                         new TestingConnectorContext())
                 .shutdown();
+    }
+
+    private static ConnectorFactory getConnectorFactory()
+    {
+        return getOnlyElement(new IcebergPlugin().getConnectorFactories());
     }
 }

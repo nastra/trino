@@ -45,7 +45,7 @@ public class TrinoNessieCatalogFactory
             TrinoFileSystemFactory fileSystemFactory,
             IcebergTableOperationsProvider tableOperationsProvider,
             NessieIcebergClient nessieClient,
-            NessieConfig nessieConfig,
+            IcebergNessieCatalogConfig icebergNessieCatalogConfig,
             IcebergConfig icebergConfig)
     {
         this.catalogName = requireNonNull(catalogName, "catalogName is null");
@@ -53,7 +53,7 @@ public class TrinoNessieCatalogFactory
         this.typeManager = requireNonNull(typeManager, "typeManager is null");
         this.tableOperationsProvider = requireNonNull(tableOperationsProvider, "tableOperationsProvider is null");
         this.nessieClient = requireNonNull(nessieClient, "nessieClient is null");
-        this.warehouseLocation = requireNonNull(nessieConfig, "nessieConfig is null").getDefaultWarehouseDir();
+        this.warehouseLocation = requireNonNull(icebergNessieCatalogConfig, "nessieConfig is null").getDefaultWarehouseDir();
         requireNonNull(icebergConfig, "icebergConfig is null");
         this.isUniqueTableLocation = icebergConfig.isUniqueTableLocation();
     }

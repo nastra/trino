@@ -74,6 +74,7 @@ public final class TestGroups
     public static final String ICEBERG_FORMAT_VERSION_COMPATIBILITY = "iceberg_format_version_compatibility";
     public static final String ICEBERG_REST = "iceberg_rest";
     public static final String ICEBERG_JDBC = "iceberg_jdbc";
+    public static final String ICEBERG_NESSIE = "iceberg_nessie";
     public static final String AVRO = "avro";
     public static final String PHOENIX = "phoenix";
     public static final String CLICKHOUSE = "clickhouse";
@@ -92,7 +93,6 @@ public final class TestGroups
     public static final String HUDI = "hudi";
     public static final String PARQUET = "parquet";
     public static final String IGNITE = "ignite";
-    public static final String ICEBERG_NESSIE = "iceberg_nessie";
 
     private TestGroups() {}
 }
