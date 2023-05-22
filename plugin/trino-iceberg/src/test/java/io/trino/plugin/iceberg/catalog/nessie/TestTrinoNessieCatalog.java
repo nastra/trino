@@ -84,17 +84,17 @@ public class TestTrinoNessieCatalog
             fail(e.getMessage());
         }
         TrinoFileSystemFactory fileSystemFactory = new HdfsFileSystemFactory(HDFS_ENVIRONMENT, HDFS_FILE_SYSTEM_STATS);
-        NessieConfig nessieConfig = new NessieConfig()
+        IcebergNessieCatalogConfig icebergNessieCatalogConfig = new IcebergNessieCatalogConfig()
                 .setServerUri(nessieContainer.getRestApiUri());
         NessieApiV1 nessieApi = HttpClientBuilder.builder()
                 .withUri(nessieContainer.getRestApiUri())
                 .build(NessieApiV1.class);
-        NessieIcebergClient nessieClient = new NessieIcebergClient(nessieApi, nessieConfig.getDefaultReferenceName(), null, ImmutableMap.of());
+        NessieIcebergClient nessieClient = new NessieIcebergClient(nessieApi, icebergNessieCatalogConfig.getDefaultReferenceName(), null, ImmutableMap.of());
         return new TrinoNessieCatalog(
                 new CatalogName("catalog_name"),
                 new TestingTypeManager(),
                 fileSystemFactory,
-                new NessieIcebergTableOperationsProvider(fileSystemFactory, nessieClient),
+                new IcebergNessieTableOperationsProvider(fileSystemFactory, nessieClient),
                 nessieClient,
                 tmpDirectory.toAbsolutePath().toString(),
                 useUniqueTableLocations);
@@ -107,20 +107,20 @@ public class TestTrinoNessieCatalog
         Path tmpDirectory = createTempDirectory("test_nessie_catalog_default_location_");
         tmpDirectory.toFile().deleteOnExit();
         TrinoFileSystemFactory fileSystemFactory = new HdfsFileSystemFactory(HDFS_ENVIRONMENT, HDFS_FILE_SYSTEM_STATS);
-        NessieConfig nessieConfig = new NessieConfig()
+        IcebergNessieCatalogConfig icebergNessieCatalogConfig = new IcebergNessieCatalogConfig()
                 .setDefaultWarehouseDir(tmpDirectory.toAbsolutePath().toString())
                 .setServerUri(nessieContainer.getRestApiUri());
         NessieApiV1 nessieApi = HttpClientBuilder.builder()
                 .withUri(nessieContainer.getRestApiUri())
                 .build(NessieApiV1.class);
-        NessieIcebergClient nessieClient = new NessieIcebergClient(nessieApi, nessieConfig.getDefaultReferenceName(), null, ImmutableMap.of());
+        NessieIcebergClient nessieClient = new NessieIcebergClient(nessieApi, icebergNessieCatalogConfig.getDefaultReferenceName(), null, ImmutableMap.of());
         TrinoCatalog catalogWithDefaultLocation = new TrinoNessieCatalog(
                 new CatalogName("catalog_name"),
                 new TestingTypeManager(),
                 fileSystemFactory,
-                new NessieIcebergTableOperationsProvider(fileSystemFactory, nessieClient),
+                new IcebergNessieTableOperationsProvider(fileSystemFactory, nessieClient),
                 nessieClient,
-                nessieConfig.getDefaultWarehouseDir(),
+                icebergNessieCatalogConfig.getDefaultWarehouseDir(),
                 false);
 
         String namespace = "test_default_location_" + randomNameSuffix();

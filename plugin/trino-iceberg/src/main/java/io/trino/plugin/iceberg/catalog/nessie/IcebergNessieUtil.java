@@ -15,17 +15,10 @@ package io.trino.plugin.iceberg.catalog.nessie;
 
 import io.trino.spi.connector.SchemaTableName;
 import org.apache.iceberg.catalog.TableIdentifier;
-import org.projectnessie.model.ContentKey;
-import org.projectnessie.model.Namespace;
 
-final class NessieIcebergUtil
+final class IcebergNessieUtil
 {
-    private NessieIcebergUtil() {}
-
-    static ContentKey toKey(SchemaTableName tableName)
-    {
-        return ContentKey.of(Namespace.parse(tableName.getSchemaName()), tableName.getTableName());
-    }
+    private IcebergNessieUtil() {}
 
     static TableIdentifier toIdentifier(SchemaTableName schemaTableName)
     {

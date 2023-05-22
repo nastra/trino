@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.trino.filesystem.Location;
 import io.trino.plugin.iceberg.BaseIcebergConnectorSmokeTest;
+import io.trino.plugin.iceberg.IcebergConfig;
 import io.trino.plugin.iceberg.IcebergQueryRunner;
 import io.trino.plugin.iceberg.SchemaInitializer;
 import io.trino.testing.QueryRunner;
@@ -38,7 +39,6 @@ import static io.trino.plugin.hive.HiveTestUtils.HDFS_FILE_SYSTEM_FACTORY;
 import static io.trino.plugin.iceberg.IcebergTestUtils.checkOrcFileSorting;
 import static io.trino.tpch.TpchTable.LINE_ITEM;
 import static java.lang.String.format;
-import static org.apache.iceberg.FileFormat.ORC;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class TestIcebergNessieCatalogConnectorSmokeTest
@@ -49,7 +49,7 @@ public class TestIcebergNessieCatalogConnectorSmokeTest
 
     public TestIcebergNessieCatalogConnectorSmokeTest()
     {
-        super(ORC);
+        super(new IcebergConfig().getFileFormat().toIceberg());
     }
 
     @BeforeClass
@@ -81,10 +81,10 @@ public class TestIcebergNessieCatalogConnectorSmokeTest
                 .setBaseDataDir(Optional.of(tempDir))
                 .setIcebergProperties(
                         ImmutableMap.of(
-                                "iceberg.file-format", ORC.name(),
+                                "iceberg.file-format", format.name(),
                                 "iceberg.catalog.type", "nessie",
-                                "iceberg.nessie.uri", nessieContainer.getRestApiUri(),
-                                "iceberg.nessie.default-warehouse-dir", tempDir.toString(),
+                                "iceberg.nessie-catalog.uri", nessieContainer.getRestApiUri(),
+                                "iceberg.nessie-catalog.default-warehouse-dir", tempDir.toString(),
                                 "iceberg.writer-sort-buffer-size", "1MB"))
                 .setSchemaInitializer(
                         SchemaInitializer.builder()

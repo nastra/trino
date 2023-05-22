@@ -22,12 +22,12 @@ import static io.airlift.configuration.testing.ConfigAssertions.assertFullMappin
 import static io.airlift.configuration.testing.ConfigAssertions.assertRecordedDefaults;
 import static io.airlift.configuration.testing.ConfigAssertions.recordDefaults;
 
-public class TestNessieConfig
+public class TestIcebergNessieCatalogConfig
 {
     @Test
     public void testDefaults()
     {
-        assertRecordedDefaults(recordDefaults(NessieConfig.class)
+        assertRecordedDefaults(recordDefaults(IcebergNessieCatalogConfig.class)
                 .setDefaultWarehouseDir(null)
                 .setServerUri(null)
                 .setDefaultReferenceName("main"));
@@ -37,12 +37,12 @@ public class TestNessieConfig
     public void testExplicitPropertyMapping()
     {
         Map<String, String> properties = ImmutableMap.<String, String>builder()
-                .put("iceberg.nessie.default-warehouse-dir", "/tmp")
-                .put("iceberg.nessie.uri", "http://localhost:xxx/api/v1")
-                .put("iceberg.nessie.ref", "someRef")
+                .put("iceberg.nessie-catalog.default-warehouse-dir", "/tmp")
+                .put("iceberg.nessie-catalog.uri", "http://localhost:xxx/api/v1")
+                .put("iceberg.nessie-catalog.ref", "someRef")
                 .buildOrThrow();
 
-        NessieConfig expected = new NessieConfig()
+        IcebergNessieCatalogConfig expected = new IcebergNessieCatalogConfig()
                 .setDefaultWarehouseDir("/tmp")
                 .setServerUri("http://localhost:xxx/api/v1")
                 .setDefaultReferenceName("someRef");

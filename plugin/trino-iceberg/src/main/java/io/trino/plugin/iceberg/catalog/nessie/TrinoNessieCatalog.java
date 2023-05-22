@@ -53,7 +53,7 @@ import static io.trino.plugin.iceberg.IcebergSchemaProperties.LOCATION_PROPERTY;
 import static io.trino.plugin.iceberg.IcebergUtil.getIcebergTableWithMetadata;
 import static io.trino.plugin.iceberg.IcebergUtil.quotedTableName;
 import static io.trino.plugin.iceberg.IcebergUtil.validateTableCanBeDropped;
-import static io.trino.plugin.iceberg.catalog.nessie.NessieIcebergUtil.toIdentifier;
+import static io.trino.plugin.iceberg.catalog.nessie.IcebergNessieUtil.toIdentifier;
 import static io.trino.spi.StandardErrorCode.NOT_SUPPORTED;
 import static java.util.Objects.requireNonNull;
 
@@ -84,7 +84,7 @@ public class TrinoNessieCatalog
     public boolean namespaceExists(ConnectorSession session, String namespace)
     {
         try {
-            return null != nessieClient.loadNamespaceMetadata(Namespace.of(namespace));
+            return nessieClient.loadNamespaceMetadata(Namespace.of(namespace)) != null;
         }
         catch (Exception e) {
             return false;
