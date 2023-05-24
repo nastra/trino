@@ -20,9 +20,9 @@ import io.trino.plugin.iceberg.BaseIcebergConnectorSmokeTest;
 import io.trino.plugin.iceberg.IcebergConfig;
 import io.trino.plugin.iceberg.IcebergQueryRunner;
 import io.trino.plugin.iceberg.SchemaInitializer;
+import io.trino.plugin.iceberg.containers.NessieContainer;
 import io.trino.testing.QueryRunner;
 import io.trino.testing.TestingConnectorBehavior;
-import io.trino.testing.containers.NessieContainer;
 import io.trino.tpch.TpchTable;
 import org.testng.SkipException;
 import org.testng.annotations.AfterClass;
@@ -37,7 +37,6 @@ import static com.google.common.io.MoreFiles.deleteRecursively;
 import static com.google.common.io.RecursiveDeleteOption.ALLOW_INSECURE;
 import static io.trino.plugin.hive.HiveTestUtils.HDFS_FILE_SYSTEM_FACTORY;
 import static io.trino.plugin.iceberg.IcebergTestUtils.checkOrcFileSorting;
-import static io.trino.tpch.TpchTable.LINE_ITEM;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -90,7 +89,6 @@ public class TestIcebergNessieCatalogConnectorSmokeTest
                         SchemaInitializer.builder()
                                 .withClonedTpchTables(ImmutableList.<TpchTable<?>>builder()
                                         .addAll(REQUIRED_TPCH_TABLES)
-                                        .add(LINE_ITEM)
                                         .build())
                                 .build())
                 .build();

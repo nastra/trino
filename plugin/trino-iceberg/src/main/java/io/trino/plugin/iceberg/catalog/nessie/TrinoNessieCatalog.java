@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static io.trino.filesystem.Locations.appendPath;
@@ -55,6 +54,7 @@ import static io.trino.plugin.iceberg.IcebergUtil.quotedTableName;
 import static io.trino.plugin.iceberg.IcebergUtil.validateTableCanBeDropped;
 import static io.trino.plugin.iceberg.catalog.nessie.IcebergNessieUtil.toIdentifier;
 import static io.trino.spi.StandardErrorCode.NOT_SUPPORTED;
+import static io.trino.spi.connector.SchemaTableName.schemaTableName;
 import static java.util.Objects.requireNonNull;
 
 public class TrinoNessieCatalog
@@ -94,7 +94,9 @@ public class TrinoNessieCatalog
     @Override
     public List<String> listNamespaces(ConnectorSession session)
     {
-        return nessieClient.listNamespaces(Namespace.empty()).stream().map(Namespace::toString).collect(Collectors.toList());
+        return nessieClient.listNamespaces(Namespace.empty()).stream()
+                .map(Namespace::toString)
+                .collect(toImmutableList());
     }
 
     @Override
@@ -148,7 +150,7 @@ public class TrinoNessieCatalog
     {
         return nessieClient.listTables(namespace.isEmpty() ? Namespace.empty() : Namespace.of(namespace.get()))
                 .stream()
-                .map(id -> SchemaTableName.schemaTableName(id.namespace().toString(), id.name()))
+                .map(id -> schemaTableName(id.namespace().toString(), id.name()))
                 .collect(toImmutableList());
     }
 
@@ -312,8 +314,12 @@ public class TrinoNessieCatalog
     }
 
     @Override
-    public void createMaterializedView(ConnectorSession session, SchemaTableName schemaViewName,
-            ConnectorMaterializedViewDefinition definition, boolean replace, boolean ignoreExisting)
+    public void createMaterializedView(
+            ConnectorSession session,
+            SchemaTableName schemaViewName,
+            ConnectorMaterializedViewDefinition definition,
+            boolean replace,
+            boolean ignoreExisting)
     {
         throw new TrinoException(NOT_SUPPORTED, "createMaterializedView is not supported for Iceberg Nessie catalogs");
     }
