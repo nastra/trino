@@ -16,6 +16,7 @@ package io.trino.plugin.iceberg.catalog.nessie;
 import com.google.common.collect.ImmutableMap;
 import org.testng.annotations.Test;
 
+import java.net.URI;
 import java.util.Map;
 
 import static io.airlift.configuration.testing.ConfigAssertions.assertFullMapping;
@@ -44,7 +45,7 @@ public class TestIcebergNessieCatalogConfig
 
         IcebergNessieCatalogConfig expected = new IcebergNessieCatalogConfig()
                 .setDefaultWarehouseDir("/tmp")
-                .setServerUri("http://localhost:xxx/api/v1")
+                .setServerUri(URI.create("http://localhost:xxx/api/v1"))
                 .setDefaultReferenceName("someRef");
 
         assertFullMapping(properties, expected);

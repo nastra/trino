@@ -49,11 +49,9 @@ public class IcebergNessieCatalogConfig
 
     @Config("iceberg.nessie-catalog.uri")
     @ConfigDescription("The URI to connect to the Nessie server")
-    public IcebergNessieCatalogConfig setServerUri(String serverUri)
+    public IcebergNessieCatalogConfig setServerUri(URI serverUri)
     {
-        if (serverUri != null) {
-            this.serverUri = URI.create(serverUri);
-        }
+        this.serverUri = serverUri;
         return this;
     }
 

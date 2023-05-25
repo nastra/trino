@@ -38,6 +38,7 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -85,7 +86,7 @@ public class TestTrinoNessieCatalog
         }
         TrinoFileSystemFactory fileSystemFactory = new HdfsFileSystemFactory(HDFS_ENVIRONMENT, HDFS_FILE_SYSTEM_STATS);
         IcebergNessieCatalogConfig icebergNessieCatalogConfig = new IcebergNessieCatalogConfig()
-                .setServerUri(nessieContainer.getRestApiUri());
+                .setServerUri(URI.create(nessieContainer.getRestApiUri()));
         NessieApiV1 nessieApi = HttpClientBuilder.builder()
                 .withUri(nessieContainer.getRestApiUri())
                 .build(NessieApiV1.class);
@@ -109,7 +110,7 @@ public class TestTrinoNessieCatalog
         TrinoFileSystemFactory fileSystemFactory = new HdfsFileSystemFactory(HDFS_ENVIRONMENT, HDFS_FILE_SYSTEM_STATS);
         IcebergNessieCatalogConfig icebergNessieCatalogConfig = new IcebergNessieCatalogConfig()
                 .setDefaultWarehouseDir(tmpDirectory.toAbsolutePath().toString())
-                .setServerUri(nessieContainer.getRestApiUri());
+                .setServerUri(URI.create(nessieContainer.getRestApiUri()));
         NessieApiV1 nessieApi = HttpClientBuilder.builder()
                 .withUri(nessieContainer.getRestApiUri())
                 .build(NessieApiV1.class);
